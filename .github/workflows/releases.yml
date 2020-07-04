@@ -1,0 +1,109 @@
+name: Prepare release
+
+on:
+  push:
+    tags:
+    - '[0-9]+.[0-9]+.[0-9]+'
+    - '[0-9]+.[0-9]+.[0-9]+-*'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Retrieve cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-ci-${{ hashFiles('**/Cargo.lock') }}
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
+    - name: cargo build --release
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release
+      env:
+        TARGET: x86_64-unknown-linux-musl
+    - name: Create checksum
+      run: |
+        sha256sum target/release/dfw > target/release/dfw.sha256
+
+    - name: Identify if tag is a prerelease
+      id: tag
+      run: |
+        if [[ "${{ github.ref }}" =~ ^refs/tags/(.+)$ ]]; then
+          echo "::set-output name=value::${BASH_REMATCH[1]}"
+        else
+          echo "::error ::Expected a tag"
+          exit 1
+        fi
+
+        if [[ "${{ github.ref }}" =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::set-output name=is-prerelease::false"
+        else
+          echo "::set-output name=is-prerelease::true"
+        fi
+    - name: Extract current changelog
+      id: changelog
+      run:
+        |
+        changelog="$(hack/extract-current-changelog.py CHANGELOG.md)"
+        # https://github.community/t/set-output-truncates-multiline-strings/16852/3
+        changelog="${changelog//'%'/'%25'}"
+        changelog="${changelog//$'\n'/'%0A'}"
+        changelog="${changelog//$'\r'/'%0D'}"
+
+        echo "::set-output name=value::$changelog"
+
+    - name: Prepare release
+      id: prepare-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: v${{ github.ref }}
+        draft: true
+        prerelease: ${{ steps.tag.outputs.is-prerelease }}
+        body: |
+          # Summary
+
+          TODO!
+
+          ## Changes
+
+          ${{ steps.changelog.outputs.value }}
+
+          ## Installation
+
+          TODO: write installation/usage instructions
+
+    - name: Upload static Linux binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.prepare-release.outputs.upload_url }}
+        asset_path: target/release/in-container
+        asset_name: in-container-x86_64-unknown-linux-musl
+        asset_content_type: application/octet-stream
+    - name: Upload static Linux binary checksum
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.prepare-release.outputs.upload_url }}
+        asset_path: target/release/in-container.sha256
+        asset_name: in-container-x86_64-unknown-linux-musl.sha256
+        asset_content_type: application/octet-stream
