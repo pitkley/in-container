@@ -70,7 +70,7 @@ jobs:
     - name: yamllint
       uses: ibiqlik/action-yamllint@v1
 
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.continue-on-error }}
 
