@@ -10,7 +10,7 @@ use super::ContainerRuntime;
 
 pub(super) fn get_container_runtime() -> Option<ContainerRuntime> {
     chain! {
-        docker::in_container,
+        docker::get_container_runtime,
     }
 }
 

@@ -83,17 +83,25 @@ jobs:
         - # MSRV
           1.40.0
         target:
-        - ""
+        - "x86_64-unknown-linux-gnu"
+        use-cross:
+        - false
         continue-on-error:
         - false
 
         include:
         - rust: stable
           target: "x86_64-unknown-linux-musl"
+          use-cross: false
           continue-on-error: false
         - rust: nightly
-          target: ""
+          target: "x86_64-unknown-linux-gnu"
+          use-cross: false
           continue-on-error: true
+        - rust: stable
+          target: "x86_64-pc-windows-gnu"
+          use-cross: true
+          continue-on-error: false
 
     steps:
     - name: Checkout
@@ -111,14 +119,15 @@ jobs:
       with:
         profile: minimal
         toolchain: ${{ matrix.rust }}
+        target: ${{ matrix.target }}
         override: true
 
     - name: cargo build
       uses: actions-rs/cargo@v1
       with:
         command: build
-      env:
-        TARGET: ${{ matrix.target }}
+        use-cross: ${{ matrix.use-cross }}
+        args: --target ${{ matrix.target }}
     - name: cargo test
       uses: actions-rs/cargo@v1
       with:
