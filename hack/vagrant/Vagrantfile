@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provision "binary",
+    type: "file",
+    source: "../../in-container",
+    destination: "in-container"
+  config.vm.provision "binary-executable",
+    type: "shell",
+    inline: <<-SHELL
+      chmod +x ./in-container
+    SHELL
+
+  config.vm.define "freebsd12" do |node|
+    node.vm.box = "generic/freebsd12"
+    node.vm.hostname = "in-container-freebsd12"
+
+    config.vm.provision "jail",
+      type: "shell",
+      inline: <<-SHELL
+        set -ex
+        pkg install -q -y ezjail
+        ezjail-admin install 2>/dev/null
+        if="$(netstat -r | grep default | awk '{print $4}')"
+        ezjail-admin create in_container "$if|192.0.2.1" 2>/dev/null
+        ezjail-admin onestart in_container
+
+        jail_root="$(ezjail-admin list | grep in_container | awk '{print $5}')"
+        cp ./in-container "$jail_root/in-container"
+      SHELL
+  end
+end

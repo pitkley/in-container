@@ -140,11 +140,17 @@ jobs:
       env:
         TARGET: ${{ matrix.target }}
     - name: Store in-container artifact
-      if: ${{ matrix.rust == 'stable' }}
+      if: ${{ matrix.rust == 'stable' && matrix.target != 'x86_64-pc-windows-gnu' }}
       uses: actions/upload-artifact@v2
       with:
         name: in-container-${{ matrix.target }}
         path: target/${{ matrix.target }}/debug/in-container
+    - name: Store in-container artifact
+      if: ${{ matrix.rust == 'stable' && matrix.target == 'x86_64-pc-windows-gnu' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: in-container-${{ matrix.target }}
+        path: target/${{ matrix.target }}/debug/in-container.exe
 
   integration-test-linux:
     runs-on: ubuntu-latest
@@ -378,6 +384,63 @@ jobs:
           0)
             if [ "$container_runtime" != "lxc" ]; then
               echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'lxc')"
+              exit 1
+            fi
+            ;;
+          1)
+            echo "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+            ;;
+          *)
+            echo "::error ::Unknown error has occurred"
+            ;;
+        esac
+        exit "$exit_code"
+
+  integration-test-freebsd:
+    runs-on:
+      # The FreeBSD tests run on macOS because there are no FreeBSD runners available from GitHub,
+      # and macOS is the only environment where nested virtualization can be used.
+      macos-latest
+    needs:
+    - build
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Retrieve in-container artifact
+      uses: actions/download-artifact@v2
+      # Note: the Vagrantfile assumes that the binary to execute is in the root of the workspace,
+      # which is where this download puts it.
+      with:
+        name: in-container-x86_64-unknown-freebsd
+    - name: vagrant up freebsd12
+      working-directory: hack/vagrant
+      run: vagrant up freebsd12
+    - name: Run outside of jail
+      working-directory: hack/vagrant
+      run: |
+        exit_code=0
+        container_runtime="$(
+          vagrant ssh freebsd12 \
+            -c './in-container --print' \
+        )" || exit_code=$?
+        if [ "$exit_code" -ne 1 ]; then
+          echo "::error ::in-container incorrectly determined that it was running in a container, when it was not"
+          exit 1
+        fi
+    - name: Run inside jail
+      working-directory: hack/vagrant
+      run: |
+        exit_code=0
+        container_runtime="$(
+          vagrant ssh freebsd12 \
+            -c 'sudo jexec -l in_container /in-container --print' \
+        )" || exit_code=$?
+
+        case "$exit_code" in
+          0)
+            if [ "$container_runtime" != "jail" ]; then
+              echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'jail')"
               exit 1
             fi
             ;;
