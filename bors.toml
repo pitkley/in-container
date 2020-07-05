@@ -2,6 +2,7 @@ status = [
     "build (1.40.0, false)",
     "build (stable, false)",
     "build (beta, false)",
+    "build (stable, x86_64-unknown-freebsd, false)",
     "build (stable, x86_64-unknown-linux-musl, false)",
     "build (stable, x86_64-pc-windows-gnu, false)",
     "rustfmt",
