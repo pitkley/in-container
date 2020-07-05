@@ -19,7 +19,8 @@ use clap::{crate_authors, crate_description, crate_name, crate_version, Clap};
          crate_name!(), " was run within a container, and a non-zero exit-code (specifically 1) if \
          it was not run inside a container.\n\n\
          If ", crate_name!(), " encounters any errors or otherwise fails, it will try to exit with \
-         exit-code 101."
+         exit-code 101, enabling you to distinguish between not running inside a container and a \
+         failure."
     ),
 )]
 struct Opts {
