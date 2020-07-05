@@ -51,7 +51,6 @@ mod docker {
     }
 
     pub fn dockerenv_exists() -> Option<ContainerRuntime> {
-        println!("running dockerenv_exists");
         if Path::new("/.dockerenv").exists() {
             Some(ContainerRuntime::Docker)
         } else {
@@ -60,7 +59,6 @@ mod docker {
     }
 
     pub fn cgroup() -> Option<ContainerRuntime> {
-        println!("running cgroup");
         fn inner() -> io::Result<bool> {
             let file = File::open("/proc/1/cgroup")?;
             let mut reader = BufReader::new(file);
@@ -79,7 +77,6 @@ mod docker {
 }
 
 fn pid_1_environ() -> Option<ContainerRuntime> {
-    println!("running pid_1_environ");
     get_env_of_pid(1).ok().and_then(|environ| {
         environ
             .get("container")
