@@ -5,6 +5,7 @@ status = [
     "build (stable, x86_64-unknown-freebsd, true, false)",
     "build (stable, x86_64-unknown-linux-musl, false, false)",
     "build (stable, x86_64-pc-windows-gnu, true, false)",
+    "integration-test-linux",
     "rustfmt",
     "clippy",
     "check-license-headers",

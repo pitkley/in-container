@@ -139,3 +139,253 @@ jobs:
         args: -- --nocapture
       env:
         TARGET: ${{ matrix.target }}
+    - name: Store in-container artifact
+      if: ${{ matrix.rust == 'stable' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: in-container-${{ matrix.target }}
+        path: target/${{ matrix.target }}/debug/in-container
+
+  integration-test-linux:
+    runs-on: ubuntu-latest
+    needs:
+    - build
+
+    steps:
+    - name: Retrieve in-container artifact (gnu)
+      uses: actions/download-artifact@v2
+      with:
+        name: in-container-x86_64-unknown-linux-gnu
+        path: x86_64-unknown-linux-gnu
+    - name: Retrieve in-container artifact (musl)
+      uses: actions/download-artifact@v2
+      with:
+        name: in-container-x86_64-unknown-linux-musl
+        path: x86_64-unknown-linux-musl
+    - name: Make binaries executable
+      run: chmod +x */in-container
+    - name: Run outside of container (gnu)
+      run: |
+        BINARY="x86_64-unknown-linux-gnu/in-container"
+        if ! command -v "$BINARY"; then
+          echo "::error ::binary $BINARY not found"
+          exit 127
+        fi
+        if "$BINARY"; then
+          echo "::error ::in-container incorrectly determined that it was running in a container, when it was not"
+        fi
+    - name: Run outside of container (musl)
+      run: |
+        BINARY="x86_64-unknown-linux-musl/in-container"
+        if ! command -v "$BINARY"; then
+          echo "::error ::binary $BINARY not found"
+          exit 127
+        fi
+        if "$BINARY"; then
+          echo "::error ::in-container incorrectly determined that it was running in a container, when it was not"
+        fi
+    - name: Run in Docker container (gnu)
+      run: |
+        exit_code=0
+        container_runtime="$(
+          docker container run \
+            --rm \
+            -v $PWD/x86_64-unknown-linux-gnu/in-container:/in-container:ro \
+            debian \
+              /in-container --print \
+          || exit_code=$?
+        )"
+
+        case "$exit_code" in
+          0)
+            if [ "$container_runtime" != "docker" ]; then
+              echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'docker')"
+              exit 1
+            fi
+            ;;
+          1)
+            echo "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+            ;;
+          101)
+            echo "::error ::in-container encountered an internal error"
+            ;;
+          125)
+            echo "::error ::Docker encountered an internal error"
+            ;;
+          126)
+            echo "::error ::Docker was unable to invoke the binary"
+            ;;
+          127)
+            echo "::error ::Docker was unable to find the binary"
+            ;;
+          *)
+            echo "::error ::Unknown error has occurred"
+            ;;
+        esac
+        exit "$exit_code"
+    - name: Run in Docker container (musl)
+      run: |
+        exit_code=0
+        container_runtime="$(
+          docker container run \
+            --rm \
+            -v $PWD/x86_64-unknown-linux-musl/in-container:/in-container:ro \
+            alpine \
+              /in-container --print \
+          || exit_code=$?
+        )"
+
+        case "$exit_code" in
+          0)
+            if [ "$container_runtime" != "docker" ]; then
+              echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'docker')"
+              exit 1
+            fi
+            ;;
+          1)
+            echo "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+            ;;
+          101)
+            echo "::error ::in-container encountered an internal error"
+            ;;
+          125)
+            echo "::error ::Docker encountered an internal error"
+            ;;
+          126)
+            echo "::error ::Docker was unable to invoke the binary"
+            ;;
+          127)
+            echo "::error ::Docker was unable to find the binary"
+            ;;
+          *)
+            echo "::error ::Unknown error has occurred"
+            ;;
+        esac
+        exit "$exit_code"
+    - name: Setup container runtimes (LXC, systemd-nspawn)
+      run: |
+        sudo apt-get install --no-install-recommends -y \
+          lxc \
+          systemd-container \
+          ;
+
+        # Create ubuntu (libc/gnu) and alpine (musl) containers through LXC.
+        sudo lxc-create \
+          --template download \
+          --name in-container-gnu \
+          -- --dist ubuntu \
+             --release eoan \
+             --arch amd64 \
+             --no-validate \
+          ;
+        sudo lxc-create \
+          --template download \
+          --name in-container-musl \
+          -- --dist alpine \
+             --release 3.12 \
+             --arch amd64 \
+             --no-validate \
+          ;
+
+        # Ensure `/etc/machine-id` is populated (required by systemd-nspawn).
+        cat /proc/sys/kernel/random/uuid | tr -d '-' | sudo tee /var/lib/lxc/in-container-gnu/rootfs/etc/machine-id >/dev/null
+        cat /proc/sys/kernel/random/uuid | tr -d '-' | sudo tee /var/lib/lxc/in-container-musl/rootfs/etc/machine-id >/dev/null
+
+        sudo cp x86_64-unknown-linux-gnu/in-container /var/lib/lxc/in-container-gnu/rootfs/in-container
+        sudo cp x86_64-unknown-linux-musl/in-container /var/lib/lxc/in-container-musl/rootfs/in-container
+    - name: Run in systemd-nspawn container (gnu)
+      run: |
+        exit_code=0
+        container_runtime="$(
+          sudo systemd-nspawn \
+            -D /var/lib/lxc/in-container-gnu/rootfs \
+              /in-container --print \
+        )" || exit_code=$?
+
+        case "$exit_code" in
+          0)
+            if [ "$container_runtime" != "systemd-nspawn" ]; then
+              echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'systemd-nspawn')"
+              exit 1
+            fi
+            ;;
+          1)
+            echo "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+            ;;
+          *)
+            echo "::error ::Unknown error has occurred"
+            ;;
+        esac
+        exit "$exit_code"
+    - name: Run in systemd-nspawn container (musl)
+      run: |
+        exit_code=0
+        container_runtime="$(
+          sudo systemd-nspawn \
+            -D /var/lib/lxc/in-container-musl/rootfs \
+              /in-container --print \
+        )" || exit_code=$?
+
+        case "$exit_code" in
+          0)
+            if [ "$container_runtime" != "systemd-nspawn" ]; then
+              echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'systemd-nspawn')"
+              exit 1
+            fi
+            ;;
+          1)
+            echo "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+            ;;
+          *)
+            echo "::error ::Unknown error has occurred"
+            ;;
+        esac
+        exit "$exit_code"
+    - name: Run in LXC container (gnu)
+      run: |
+        exit_code=0
+        container_runtime="$(
+          sudo lxc-execute \
+            --name in-container-gnu \
+            -- /in-container --print \
+        )" || exit_code=$?
+
+        case "$exit_code" in
+          0)
+            if [ "$container_runtime" != "lxc" ]; then
+              echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'lxc')"
+              exit 1
+            fi
+            ;;
+          1)
+            echo "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+            ;;
+          *)
+            echo "::error ::Unknown error has occurred"
+            ;;
+        esac
+        exit "$exit_code"
+    - name: Run in LXC container (musl)
+      run: |
+        exit_code=0
+        container_runtime="$(
+          sudo lxc-execute \
+            --name in-container-musl \
+            -- /in-container --print \
+        )" || exit_code=$?
+
+        case "$exit_code" in
+          0)
+            if [ "$container_runtime" != "lxc" ]; then
+              echo "::error ::in-container determined the wrong runtime ('$container_runtime' instead of 'lxc')"
+              exit 1
+            fi
+            ;;
+          1)
+            echo "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+            ;;
+          *)
+            echo "::error ::Unknown error has occurred"
+            ;;
+        esac
+        exit "$exit_code"
