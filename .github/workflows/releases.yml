@@ -136,7 +136,18 @@ jobs:
 
           ## Installation
 
-          TODO: write installation/usage instructions
+          Choose one of these options to install in-container:
+
+          * Download one of the pre-built binaries attached to this release matching your operating system.
+
+          * Use [Cargo](https://doc.rust-lang.org/cargo/) to install the binary using `cargo install in-container`.
+
+          * Use it as a dendency in your Rust application/library:
+
+              ```toml
+              [dependencies]
+              in_container = "${{ steps.tag.outputs.value }}"
+              ```
 
     - name: Upload binary for x86_64-unknown-linux-musl
       uses: actions/upload-release-asset@v1
