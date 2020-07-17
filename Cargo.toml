@@ -7,6 +7,7 @@ license = "MIT/Apache-2.0"
 description = "Determines if it is running in a container"
 homepage = "https://github.com/pitkley/in-container"
 repository = "https://github.com/pitkley/in-container.git"
+readme = "README.md"
 
 categories = ["command-line-utilities"]
 keywords = ["container", "cli", "docker", "lxc"]
