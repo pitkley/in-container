@@ -142,7 +142,7 @@ dependencies = [
 
 [[package]]
 name = "in-container"
-version = "1.0.0"
+version = "1.0.1-alpha.0"
 dependencies = [
  "clap 3.0.0-beta.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sysctl 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
