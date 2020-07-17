@@ -452,3 +452,69 @@ jobs:
             ;;
         esac
         exit "$exit_code"
+
+  integration-test-windows:
+    runs-on: windows-latest
+    needs:
+    - build
+
+    steps:
+    - name: Retrieve in-container artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: in-container-x86_64-pc-windows-gnu
+    - name: Run outside of container
+      run: |
+        $InContainerBinary = ".\in-container.exe"
+
+        If (!(Test-Path "$InContainerBinary" -PathType Leaf)) {
+          Write-Output "::error ::binary $binary not found"
+          exit 127
+        }
+
+        $ContainerRuntime = & $InContainerBinary --print
+        if ($?) {
+          Write-Output "::error ::in-container incorrectly determined that it was running in a container ($ContainerRuntime), when it was not"
+        } else {
+          Write-Output "in-container correctly determined that it was not running in a container"
+        }
+        exit 0
+    - name: Run in Docker container
+      run: |
+        $ContainerRuntime =
+          docker container run `
+            --rm `
+            -v ${pwd}:C:\App `
+            mcr.microsoft.com/windows/servercore:ltsc2019 `
+              C:\App\in-container.exe --print
+        $InContainerExitCode = $LASTEXITCODE
+
+        switch ($InContainerExitCode) {
+          0 {
+            if ($ContainerRuntime -ne "docker") {
+              Write-Output "::error ::in-container determined the wrong runtime ('$ContainerRuntime' instead of 'docker')"
+              exit 1
+            } else {
+              Write-Output "in-container correctly determined that it was running in a container (runtime '$ContainerRuntime')"
+            }
+          }
+          1 {
+            Write-Output "::error ::in-container incorrectly determined that it was not running in a container, but it was running in Docker"
+          }
+          101 {
+            Write-Output "::error ::in-container encountered an internal error"
+          }
+          125 {
+            Write-Output "::error ::Docker encountered an internal error"
+          }
+          126 {
+            Write-Output "::error ::Docker was unable to invoke the binary"
+          }
+          127 {
+            Write-Output "::error ::Docker was unable to find the binary"
+          }
+          Default {
+            Write-Output "::error ::Unknown error has occurred"
+          }
+        }
+        exit $InContainerExitCode
