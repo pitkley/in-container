@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `in_container` crate."><meta name="keywords" content="rust, rustlang, rust-lang, in_container"><title>in_container - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="../favicon.ico"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../in_container/index.html'><div class='logo-container'><img src='../rust-logo.png' alt='logo'></div></a><p class='location'>Crate in_container</p><div class="sidebar-elems"><a id='all-types' href='all.html'><p>See all in_container's items</p></a><div class="block items"><ul><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'in_container', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/in_container/lib.rs.html#9-166' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>in_container</a></span></h1><div class='docblock'><h1 id="in-container" class="section-header"><a href="#in-container">in-container</a></h1>
+<p><code>in-container</code> is a binary and a library that can be used to detect if you are running inside a
+container. Executing the binary will by default return exit-code 0 if it was run inside a
+container and exit-code 1 if it wasn't. The library can be included in an application of your
+choice, allowing you to determine whether your application is running inside a container or not.</p>
+<p>(Please note that some of the detection mechanisms only work if <code>in-container</code> is executed in a
+privileged context.)</p>
+<h2 id="supported-operating-systemscontainerization-solutions" class="section-header"><a href="#supported-operating-systemscontainerization-solutions">Supported operating systems/containerization solutions</a></h2>
+<ul>
+<li>FreeBSD
+<ul>
+<li><a href="https://www.freebsd.org/doc/handbook/jails.html">Jails</a></li>
+</ul>
+</li>
+<li>Linux
+<ul>
+<li><a href="https://docs.docker.com/engine/">Docker</a></li>
+<li><a href="https://linuxcontainers.org/">LXC</a></li>
+<li><a href="https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html">systemd-nspawn</a></li>
+</ul>
+</li>
+<li>Windows
+<ul>
+<li><a href="https://docs.docker.com/docker-for-windows/install/">Docker</a></li>
+</ul>
+</li>
+</ul>
+<p>If you are missing support for an operating system or container runtime, feel free to <a href="https://github.com/pitkley/in-container/issues/new">open a
+feature request</a> or
+<a href="https://github.com/pitkley/in-container/pull/compare">open a pull request</a>.</p>
+<h2 id="usage-as-a-library" class="section-header"><a href="#usage-as-a-library">Usage as a library</a></h2>
+<p>Add <code>in-container</code> as a dependency to your project's <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+in-container = &quot;^1&quot;
+</code></pre>
+<p>You can then use <code>in_container::in_container()</code> which will return <code>true</code> if you are running
+inside a container and <code>false</code> otherwise. In case you are interested in the container-runtime
+that was detected, you can call <code>in_container::get_container_runtime()</code> instead, which will
+return an <code>Option&lt;ContainerRuntime&gt;</code>. The <code>Option</code> is <code>None</code> when not running in a container,
+otherwise it will contain the detected runtime.</p>
+<h2 id="-license" class="section-header"><a href="#-license"><a name="license"></a> License</a></h2>
+<p>This project is licensed under either of</p>
+<ul>
+<li>Apache License, Version 2.0, (<a href="LICENSE-APACHE">LICENSE-APACHE</a> or
+<a href="https://www.apache.org/licenses/LICENSE-2.0">https://www.apache.org/licenses/LICENSE-2.0</a>)</li>
+<li>MIT license (<a href="LICENSE-MIT">LICENSE-MIT</a> or <a href="https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</a>)</li>
+</ul>
+<p>at your option.</p>
+<h3 id="-contribution" class="section-header"><a href="#-contribution"><a name="license-contribution"></a> Contribution</a></h3>
+<p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in
+this project by you, as defined in the Apache-2.0 license, shall be dual licensed as above,
+without any additional terms or conditions.</p>
+</div><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table><tr class='module-item'><td><a class="enum" href="enum.ContainerRuntime.html" title='in_container::ContainerRuntime enum'>ContainerRuntime</a></td><td class='docblock-short'><p>The detected container runtime.</p>
+</td></tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table><tr class='module-item'><td><a class="fn" href="fn.get_container_runtime.html" title='in_container::get_container_runtime fn'>get_container_runtime</a></td><td class='docblock-short'><p>Optionally returns the detected <a href="enum.ContainerRuntime.html"><code>ContainerRuntime</code></a> if called from inside a container.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.in_container.html" title='in_container::in_container fn'>in_container</a></td><td class='docblock-short'><p>Returns <code>true</code> if called from inside a container, <code>false</code> otherwise.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "in_container";</script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>
