@@ -1,4 +1,5 @@
 #!/bin/bash
+set -exo pipefail
 
 : "${COMMIT_MESSAGE:?"COMMIT_MESSAGE needs to be non-empty"}"
 
@@ -18,10 +19,8 @@ function git_commit {
             --author="github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>" \
             --message "${COMMIT_MESSAGE}" \
         || status=$?
-    echo "status: $status"
     case "$status" in
     0)
-        echo "return 0"
         return 0
         ;;
     1)
@@ -30,7 +29,6 @@ function git_commit {
         return 1
         ;;
     *)
-        echo "exit 1!"
         # A different error has occurred, exit!
         exit 1
         ;;
