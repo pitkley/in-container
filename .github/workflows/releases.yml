@@ -7,8 +7,19 @@ on:
     - '[0-9]+.[0-9]+.[0-9]+-*'
 
 jobs:
-  build-and-publish:
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+        - target: "x86_64-unknown-linux-musl"
+          use-cross: false
+        - target: "x86_64-unknown-freebsd"
+          use-cross: true
+        - target: "x86_64-pc-windows-gnu"
+          use-cross: true
 
     steps:
     - name: Checkout
@@ -26,18 +37,56 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
+        target: ${{ matrix.target }}
         override: true
-
     - name: cargo build --release
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --release
-      env:
-        TARGET: x86_64-unknown-linux-musl
-    - name: Create checksum
+        use-cross: ${{ matrix.use-cross }}
+        args: --release --target ${{ matrix.target }}
+    - name: Store in-container artifact
+      if: ${{ matrix.target != 'x86_64-pc-windows-gnu' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: in-container-${{ matrix.target }}
+        path: target/${{ matrix.target }}/release/in-container
+    - name: Store in-container artifact
+      if: ${{ matrix.target == 'x86_64-pc-windows-gnu' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: in-container-${{ matrix.target }}
+        path: target/${{ matrix.target }}/release/in-container.exe
+
+  publish:
+    runs-on: ubuntu-latest
+    needs:
+    - build
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Retrieve in-container artifact (x86_64-unknown-linux-musl)
+      uses: actions/download-artifact@v2
+      with:
+        name: in-container-x86_64-unknown-linux-musl
+        path: x86_64-unknown-linux-musl
+    - name: Retrieve in-container artifact (x86_64-unknown-freebsd)
+      uses: actions/download-artifact@v2
+      with:
+        name: in-container-x86_64-unknown-freebsd
+        path: x86_64-unknown-freebsd
+    - name: Retrieve in-container artifact (x86_64-pc-windows-gnu)
+      uses: actions/download-artifact@v2
+      with:
+        name: in-container-x86_64-pc-windows-gnu
+        path: x86_64-pc-windows-gnu
+    - name: Create checksums
       run: |
-        sha256sum target/release/dfw > target/release/dfw.sha256
+        sha256sum x86_64-unknown-linux-musl/in-container > x86_64-unknown-linux-musl/in-container.sha256
+        sha256sum x86_64-unknown-freebsd/in-container > x86_64-unknown-freebsd/in-container.sha256
+        sha256sum x86_64-pc-windows-gnu/in-container.exe > x86_64-pc-windows-gnu/in-container.exe.sha256
 
     - name: Identify if tag is a prerelease
       id: tag
@@ -89,21 +138,59 @@ jobs:
 
           TODO: write installation/usage instructions
 
-    - name: Upload static Linux binary
+    - name: Upload binary for x86_64-unknown-linux-musl
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.prepare-release.outputs.upload_url }}
-        asset_path: target/release/in-container
+        asset_path: x86_64-unknown-linux-musl/in-container
         asset_name: in-container-x86_64-unknown-linux-musl
         asset_content_type: application/octet-stream
-    - name: Upload static Linux binary checksum
+    - name: Upload binary checksum for x86_64-unknown-linux-musl
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.prepare-release.outputs.upload_url }}
-        asset_path: target/release/in-container.sha256
+        asset_path: x86_64-unknown-linux-musl/in-container.sha256
         asset_name: in-container-x86_64-unknown-linux-musl.sha256
+        asset_content_type: application/octet-stream
+
+    - name: Upload binary for x86_64-unknown-freebsd
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.prepare-release.outputs.upload_url }}
+        asset_path: x86_64-unknown-freebsd/in-container
+        asset_name: in-container-x86_64-unknown-freebsd
+        asset_content_type: application/octet-stream
+    - name: Upload binary checksum for x86_64-unknown-freebsd
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.prepare-release.outputs.upload_url }}
+        asset_path: x86_64-unknown-freebsd/in-container.sha256
+        asset_name: in-container-x86_64-unknown-freebsd.sha256
+        asset_content_type: application/octet-stream
+
+    - name: Upload binary for x86_64-pc-windows-gnu
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.prepare-release.outputs.upload_url }}
+        asset_path: x86_64-pc-windows-gnu/in-container.exe
+        asset_name: in-container-x86_64-pc-windows-gnu.exe
+        asset_content_type: application/octet-stream
+    - name: Upload binary checksum for x86_64-unknown-freebsd
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.prepare-release.outputs.upload_url }}
+        asset_path: x86_64-pc-windows-gnu/in-container.exe.sha256
+        asset_name: in-container-x86_64-pc-windows-gnu.exe.sha256
         asset_content_type: application/octet-stream
