@@ -26,11 +26,11 @@ use clap::{crate_authors, crate_description, crate_name, crate_version, Clap};
 struct Opts {
     /// Specify if you want in-container to print the container-runtime it has detected. There will
     /// be no output if it is not running inside a container.
-    #[clap(short = "p", long = "print")]
+    #[clap(short = 'p', long = "print")]
     print: bool,
     /// Do not exit with exit-code 1 if not running inside a container. (This can only be used if
     /// --print is specified.)
-    #[clap(short = "d", long = "disable-exit-code", requires = "print")]
+    #[clap(short = 'd', long = "disable-exit-code", requires = "print")]
     disable_exit_code: bool,
 }
 
