@@ -280,7 +280,7 @@ jobs:
           --template download \
           --name in-container-gnu \
           -- --dist ubuntu \
-             --release eoan \
+             --release focal \
              --arch amd64 \
              --no-validate \
           ;
