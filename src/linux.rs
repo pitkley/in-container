@@ -9,7 +9,6 @@
 use super::ContainerRuntime;
 use std::{
     collections::HashMap,
-    convert,
     fs::File,
     io::{self, prelude::*, BufReader},
     path::Path,
@@ -36,7 +35,7 @@ fn get_env_of_pid(pid: i32) -> io::Result<HashMap<String, String>> {
                 (key.to_owned(), value[1..].to_owned())
             })
         })
-        .filter_map(convert::identity)
+        .flatten()
         .collect())
 }
 
