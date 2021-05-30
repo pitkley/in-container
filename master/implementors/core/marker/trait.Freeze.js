@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["in_container"] = [{"text":"impl Freeze for ContainerRuntime","synthetic":true,"types":[]}];
+implementors["in_container"] = [{"text":"impl Freeze for <a class=\"enum\" href=\"in_container/enum.ContainerRuntime.html\" title=\"enum in_container::ContainerRuntime\">ContainerRuntime</a>","synthetic":true,"types":["in_container::ContainerRuntime"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
