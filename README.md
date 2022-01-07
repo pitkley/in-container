@@ -32,6 +32,18 @@ You can then use `in_container::in_container()` which will return `true` if you 
 In case you are interested in the container-runtime that was detected, you can call `in_container::get_container_runtime()` instead, which will return an `Option<ContainerRuntime>`.
 The `Option` is `None` when not running in a container, otherwise it will contain the detected runtime.
 
+## <a name="versionbumppolicy"></a> Version bump policy
+
+In general, the versioning scheme follows the semantic versioning guidelines:
+
+* The patch version is bumped when backwards compatible fixes are made (this includes updates to dependencies).
+* The minor version is bumped when new features are introduced, but backwards compatibility is retained.
+* The major version is bumped when a backwards incompatible change was made.
+
+Special case:
+
+* A bump in the minimum supported Rust version (MSRV), which is currently 1.46.0, will be done in minor version updates (i.e. they do not require a major version bump).
+
 ## <a name="license"></a> License
 
 This project is licensed under either of

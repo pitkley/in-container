@@ -6,9 +6,9 @@
 // option. This file may not be copied, modified or distributed
 // except according to those terms.
 
-use clap::{crate_authors, crate_description, crate_name, crate_version, Clap};
+use clap::{crate_authors, crate_description, crate_name, crate_version, Parser};
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(
     author = crate_authors!(),
     version = crate_version!(),

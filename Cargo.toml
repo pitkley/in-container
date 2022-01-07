@@ -21,7 +21,7 @@ include = [
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-clap = "3.0.5"
+clap = { version = "3.0.5", features = ["cargo", "derive"] }
 
 [target.x86_64-pc-windows-gnu.dependencies]
 winreg = "0.10.1"
