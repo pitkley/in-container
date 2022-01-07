@@ -17,11 +17,20 @@ include = [
     "LICENSE-*",
 ]
 
+[[bin]]
+name = "in-container"
+path = "src/main.rs"
+required-features = ["exe"]
+
 [badges]
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-clap = { version = "3.0.5", features = ["cargo", "derive"] }
+
+[dependencies.clap]
+version = "3.0.5"
+features = ["cargo", "derive"]
+optional = true
 
 [target.x86_64-pc-windows-gnu.dependencies]
 winreg = "0.10.1"
@@ -29,3 +38,7 @@ windows-service = "0.4.0"
 
 [target.x86_64-unknown-freebsd.dependencies]
 sysctl = "0.4.3"
+
+[features]
+default = ["exe"]
+exe = ["clap"]

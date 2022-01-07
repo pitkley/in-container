@@ -25,7 +25,7 @@ Add `in-container` as a dependency to your project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-in-container = "^1"
+in-container = { version = "^1", default-features = false }
 ```
 
 You can then use `in_container::in_container()` which will return `true` if you are running inside a container and `false` otherwise.
