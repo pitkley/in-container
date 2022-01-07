@@ -78,20 +78,20 @@ jobs:
       matrix:
         rust:
         - # MSRV (library)
-          1.46.0
+          1.52.0
         target:
         - "x86_64-unknown-linux-gnu"
         use-cross:
         - false
 
         include:
-        - rust: 1.46.0
+        - rust: 1.52.0
           target: "x86_64-unknown-linux-musl"
           use-cross: false
-        - rust: 1.46.0
+        - rust: 1.52.0
           target: "x86_64-pc-windows-gnu"
           use-cross: true
-        - rust: 1.46.0
+        - rust: 1.52.0
           target: "x86_64-unknown-freebsd"
           use-cross: true
 

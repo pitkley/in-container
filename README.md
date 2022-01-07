@@ -42,7 +42,8 @@ In general, the versioning scheme follows the semantic versioning guidelines:
 
 Special case:
 
-* A bump in the minimum supported Rust version (MSRV), which is currently 1.46.0, will be done in minor version updates (i.e. they do not require a major version bump).
+* A bump in the minimum supported Rust version (MSRV) for the library, which is currently 1.52.0, will be done in minor version updates (i.e. they do not require a major version bump).
+* A bump in the minimum supported Rust version (MSRV) for the binary, which is currently 1.54.0, will be done in patch version updates (i.e. they do not require a major or minor version bump).
 
 ## <a name="license"></a> License
 
