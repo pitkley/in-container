@@ -81,6 +81,8 @@ pub fn get_container_runtime() -> Option<ContainerRuntime> {
     return linux::get_container_runtime();
     #[cfg(target_os = "windows")]
     return windows::get_container_runtime();
+    #[cfg(not(any(target_os = "freebsd", target_os = "linux", target_os = "windows")))]
+    return None;
 }
 
 /// The detected container runtime.

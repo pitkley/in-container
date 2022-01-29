@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+* Support building on all platforms, not just FreeBSD, Linux and Windows.
+
+    `in_container::get_container_runtime()` will always return `None`, `in_container::in_container()` always `false`.
+
 ## 1.0.0 (2020-07-17)
 
 Initial release supporting Docker, Jails, LXC, and systemd-nspawn on FreeBSD, Linux and Windows.
