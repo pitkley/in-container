@@ -1,6 +1,6 @@
 [package]
 name = "in-container"
-version = "1.0.1-alpha.0"
+version = "1.1.0-alpha.0"
 edition = "2018"
 authors = ["Pit Kleyersburg <pitkley@googlemail.com>"]
 license = "MIT/Apache-2.0"
@@ -17,11 +17,20 @@ include = [
     "LICENSE-*",
 ]
 
+[[bin]]
+name = "in-container"
+path = "src/main.rs"
+required-features = ["exe"]
+
 [badges]
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-clap = "3.0.0-beta.2"
+
+[dependencies.clap]
+version = "3.0.13"
+features = ["cargo", "derive"]
+optional = true
 
 [target.x86_64-pc-windows-gnu.dependencies]
 winreg = "0.10.1"
@@ -29,3 +38,7 @@ windows-service = "0.4.0"
 
 [target.x86_64-unknown-freebsd.dependencies]
 sysctl = "0.4.3"
+
+[features]
+default = ["exe"]
+exe = ["clap"]

@@ -25,12 +25,25 @@ Add `in-container` as a dependency to your project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-in-container = "^1"
+in-container = { version = "^1", default-features = false }
 ```
 
 You can then use `in_container::in_container()` which will return `true` if you are running inside a container and `false` otherwise.
 In case you are interested in the container-runtime that was detected, you can call `in_container::get_container_runtime()` instead, which will return an `Option<ContainerRuntime>`.
 The `Option` is `None` when not running in a container, otherwise it will contain the detected runtime.
+
+## <a name="versionbumppolicy"></a> Version bump policy
+
+In general, the versioning scheme follows the semantic versioning guidelines:
+
+* The patch version is bumped when backwards compatible fixes are made (this includes updates to dependencies).
+* The minor version is bumped when new features are introduced, but backwards compatibility is retained.
+* The major version is bumped when a backwards incompatible change was made.
+
+Special case:
+
+* A bump in the minimum supported Rust version (MSRV) for the library, which is currently 1.52.1, will be done in minor version updates (i.e. they do not require a major version bump).
+* A bump in the minimum supported Rust version (MSRV) for the binary, which is currently 1.54.0, will be done in patch version updates (i.e. they do not require a major or minor version bump).
 
 ## <a name="license"></a> License
 
