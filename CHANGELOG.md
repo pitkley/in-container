@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 1.1.0 (2022-01-29)
+
 * Support building on all platforms, not just FreeBSD, Linux and Windows.
 
     `in_container::get_container_runtime()` will always return `None`, `in_container::in_container()` always `false`.
