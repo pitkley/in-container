@@ -28,7 +28,7 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 
 [dependencies.clap]
-version = "3.0.13"
+version = "3.0.14"
 features = ["cargo", "derive"]
 optional = true
 
