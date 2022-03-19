@@ -29,13 +29,12 @@ fn get_env_of_pid(pid: i32) -> io::Result<HashMap<String, String>> {
 
     Ok(contents
         .split('\0')
-        .map(|key_value| {
+        .filter_map(|key_value| {
             key_value.find('=').map(|separator_index| {
                 let (key, value) = key_value.split_at(separator_index);
                 (key.to_owned(), value[1..].to_owned())
             })
         })
-        .flatten()
         .collect())
 }
 
