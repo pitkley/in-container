@@ -462,7 +462,7 @@ jobs:
     runs-on:
       # The FreeBSD tests run on macOS because there are no FreeBSD runners available from GitHub,
       # and macOS is the only environment where nested virtualization can be used.
-      macos-latest
+      macos-10.15
     needs:
     - build
 
