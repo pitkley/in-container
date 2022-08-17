@@ -37,7 +37,7 @@ winreg = "0.10.1"
 windows-service = "0.4.0"
 
 [target.x86_64-unknown-freebsd.dependencies]
-sysctl = "0.4.4"
+sysctl = "0.5.2"
 
 [features]
 default = ["exe"]
